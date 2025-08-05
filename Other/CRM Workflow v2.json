@@ -1,0 +1,456 @@
+{
+  "name": "CRM Workflow v2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Interested in ABC's Products? Fill out the following form to contact us.",
+        "formDescription": "This form is filled out by the people interested in the companies' products.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "First Name",
+              "placeholder": "First Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Last Name",
+              "placeholder": "Last Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email ID",
+              "fieldType": "email",
+              "placeholder": "Email ID",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "placeholder": "Message"
+            },
+            {
+              "fieldLabel": "Budget",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "< $100"
+                  },
+                  {
+                    "option": "$100 - $1000"
+                  },
+                  {
+                    "option": "> $1000"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        -64
+      ],
+      "id": "d8a14393-4f0a-41c9-b36c-7c3214b46e9f",
+      "name": "On form submission",
+      "webhookId": "b3b203fe-52f7-4af6-9ccf-ac686b20d033"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DxVK1uEqW6GcG76YnWeLYpjNOSumuXGG2YkQq3ll2jE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DxVK1uEqW6GcG76YnWeLYpjNOSumuXGG2YkQq3ll2jE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First Name": "={{ $json['First Name'] }}",
+            "Last Name": "={{ $json['Last Name'] }}",
+            "Email ID": "={{ $json['Email ID'] }}",
+            "Message": "={{ $json.Message }}",
+            "Budget": "={{ $json.Budget }}",
+            "Date": "={{ new Date($json.submittedAt).format('yyyy-MM-dd') }}"
+          },
+          "matchingColumns": [
+            "Email ID"
+          ],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email ID",
+              "displayName": "Email ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -320,
+        -64
+      ],
+      "id": "5aae3530-ce2b-4f1f-9e0a-82b84dccebe1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QPyBBzWHIos7ZWme",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6689c796-775e-4c13-804a-c9fdc22385fa",
+              "leftValue": "={{ $json.Budget }}",
+              "rightValue": "< $100",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "8a343252-a3b8-4744-bf08-92e5ceb2a834",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Append or update row in sheet').item.json.Budget }}",
+                    "rightValue": "$100 - $1000",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fa021de9-50b3-41b6-b4f7-3c81423db9ed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Budget: $100-1000"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fcb6fe99-b602-43f3-a4da-164695339575",
+                    "leftValue": "={{ $('On form submission').item.json.Budget }}",
+                    "rightValue": "> $1000",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Budget: > $1000"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "ab0c4bf5-874d-415d-91dc-31bc4a46f3dc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email ID'] }}",
+        "subject": "Thank you for your interest in ABC's products.",
+        "message": "=Hi {{ $json['First Name'] }} {{ $json['Last Name'] }},\n\nThank you for expressing interest in our product. Our team will be reaching out to you shortly to discuss your needs in more detail.\n\nWe noticed that your indicated budget is {{ $json.Budget }}. To better serve you and offer a wider range of high-quality solutions, we recommend considering a minimum budget of $1,000.\n\nLooking forward to assisting you further.\n\nBest regards,\nShivam Shinde,\nCEO\nABC Inc.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        -176
+      ],
+      "id": "8e252451-4745-415e-82bf-5215a9471c54",
+      "name": "Send a message",
+      "webhookId": "4f9c1715-db3f-495b-bb4c-4094457446f7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PmZ9AptPGzKGRnt5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email ID'] }}",
+        "subject": "Thank You for Reaching Out to ABC Inc.",
+        "message": "=Hi {{ $json['First Name'] }} {{ $json['Last Name'] }},  Thank you for your interest in our product. We’re excited to explore how we can support your needs.  We see that your indicated budget is {{ $json.Budget }}, which gives us the flexibility to offer you a range of high-quality solutions tailored to your goals. Our team will be in touch with you shortly to discuss the best options available.  We look forward to working with you!  \n\nBest regards, \nShivam Shinde\nCEO \nABC Inc.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        16
+      ],
+      "id": "76bf3cc2-36ba-41b1-aece-d4ee7317d2f2",
+      "name": "Send a message1",
+      "webhookId": "124d52a8-126b-4ca8-8736-603b5fbebef5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PmZ9AptPGzKGRnt5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -96
+      ],
+      "id": "9355bcb0-c458-4ba1-91cb-e4e112022d62",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "shivamdattatrayshinde@gmail.com",
+        "subject": "New Leads",
+        "message": "=A new lead has been submitted:<br>\n<br>\nName: {{ $('On form submission').item.json['First Name'] }} {{ $('On form submission').item.json['Last Name'] }}  <br>\n\nEmail: {{ $('On form submission').item.json['Email ID'] }} <br>\n\nBudget: {{ $('On form submission').item.json.Budget }} <br>\n\nMessage: {{ $('On form submission').item.json.Message }} <br>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "589ad6f8-b2fc-499c-8499-6c5281ea5264",
+      "name": "Send a message2",
+      "webhookId": "ab011575-856d-45a1-80be-81551dcb9c01",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PmZ9AptPGzKGRnt5",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "27ee0394-c314-4350-8a57-5d04951a9dcc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52e5473b2279c5b1a5f9d080c7d0c47d20d3d92f52e5b7c6a17196d1f16e7b2c"
+  },
+  "id": "CTYVT67kSKrNyi0d",
+  "tags": []
+}

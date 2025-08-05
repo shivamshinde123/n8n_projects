@@ -1,0 +1,693 @@
+{
+  "name": "Automatic Job Status Updater",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 20
+            }
+          ]
+        },
+        "filters": {
+          "includeSpamTrash": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        -160
+      ],
+      "id": "d407c319-f325-4310-84d4-562d927cd70c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PmZ9AptPGzKGRnt5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an assistant reading incoming emails. Determine if the email is about a job application.\n\nClassify the email as one of the following three categories ONLY:\n\n* \"Not a Job Application\" — if the email is unrelated to any job application\n* \"Rejected\" — if the email rejects a job application\n* \"Proceeded\" — if the email indicates progressing to the next stage\n\nRespond in **exactly** the following format (with the classification filled in):\n\n```\nFrom: {{ $json.From }}\nTo: {{ $json.To }}\nSubject: {{ $json.Subject }}\nContent: {{ $json.snippet }}\nEmail Status: <classification>\n```\n\nWhere `<classification>` must be one of: Not a Job Application, Rejected, Proceeded.\nDo **not** include any other text or explanation.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -576,
+        -160
+      ],
+      "id": "8c7e375f-c294-41d3-b322-743386afdf7e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "chatgpt-4o-latest"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "29472e30-fe56-4274-ac1e-e9f76f3bb8b1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "yfBZ7JJfrMmpcnge",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output['Email Status'] }}",
+                    "rightValue": "Proceeded",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1d5d1dc7-83f2-432f-9227-bf92722c70f7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Proceeded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bcc2fed4-33d5-412c-ba69-63eb5880c192",
+                    "leftValue": "={{ $json.output['Email Status'] }}",
+                    "rightValue": "Rejected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rejected"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b1df43db-3226-4f1e-bf52-d83ce2c42c3d",
+                    "leftValue": "={{ $json.output['Email Status'] }}",
+                    "rightValue": "Not a Job Application",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not a Job Application"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        -176
+      ],
+      "id": "c3f4509b-145e-4786-acf9-2bb267fbd9a8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8",
+          "mode": "list",
+          "cachedResultName": "Job Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company and Role": "={{ $json.output.Company_name }} - {{ $json.output.Job_role }}",
+            "Status": "={{ $json.output['Email Status'] }}"
+          },
+          "matchingColumns": [
+            "Company and Role"
+          ],
+          "schema": [
+            {
+              "id": "Company and Role",
+              "displayName": "Company and Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Emailed",
+              "displayName": "Emailed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        912,
+        144
+      ],
+      "id": "e623af2b-4275-434e-bdfe-fa5c07c4189f",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XqSsk8eToORBuczz",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shivamdattatrayshinde@gmail.com",
+        "subject": "Very Important: Application has proceeded to next level",
+        "message": "=Here is the original email:<br><br>\n\n<strong>From:</strong> {{ $json.output.From }}<br>\n<strong>Subject:</strong> {{ $json.output['Email Subject'] }} <br>\n<strong>Status:</strong> {{ $json.output['Email Status'] }}<br>\n<strong>Company:</strong> {{ $json.output.Company_name }}<br>\n<strong>Job Role:</strong> {{ $json.output.Job_role }}<br><br>\n\n<strong>Email Content:</strong><br>\n<pre style=\"font-family: inherit; white-space: pre-wrap;\">\n{{ $json.output['Email Content'] }}\n</pre>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        928,
+        -192
+      ],
+      "id": "cea019b6-8f27-4f4c-af0f-8f9835775b8b",
+      "name": "Send a message",
+      "webhookId": "71be792b-6778-45b2-8756-fecca7ed978c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PmZ9AptPGzKGRnt5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gmail Trigger\n**This trigger activates when a new email is received.**",
+        "height": 528,
+        "width": 368,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "26d1af37-ab02-4b83-8d4e-159076171834",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## LLM Chain \n**This chain classifies the received email into three categories:**\n- Proceeded: Job application has proceeded to next level\n- Rejected: Job application is rejected by the company\n- Not a Job Application: The received email is not a job application related email",
+        "height": 528,
+        "width": 400,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "0ebe4961-e7ab-474f-8dec-176d4716a579",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Switch Node\n**This node helps deal with each of the three outcomes of the LLM chain separately.**",
+        "height": 528,
+        "width": 384,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "690321d2-784f-4d2e-9a28-6cab9fa2a452",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Outcome: Job application proceeded to the next level\n### For this outcome, following two operations are carried out:\n- Update the status of application in the google sheet\n- Send an email marked as ***important*** stating the info about the job application and status",
+        "height": 592,
+        "width": 528,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        688,
+        -624
+      ],
+      "typeVersion": 1,
+      "id": "13f44e54-65fb-4747-ab55-131b0d00ee16",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Application Rejected: Job application rejected\n### For this outcome, only the status of application is updated in the google sheet.",
+        "height": 320,
+        "width": 544,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        688,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "b16ab2d5-7fb5-4424-bc2a-2fa1074f2861",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8",
+          "mode": "list",
+          "cachedResultName": "Job Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hIwPP6O6X7nlsPDkqCDVqslhmpr6OlXTMdEjaWDy8A8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company and Role": "={{ $json.output.Company_name }} - {{ $json.output.Job_role }}",
+            "Status": "={{ $json.output['Email Status'] }}"
+          },
+          "matchingColumns": [
+            "Company and Role"
+          ],
+          "schema": [
+            {
+              "id": "Company and Role",
+              "displayName": "Company and Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emailed",
+              "displayName": "Emailed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        928,
+        -384
+      ],
+      "id": "5758f5e1-5748-4645-bbbd-47aaddda0122",
+      "name": "Update row in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XqSsk8eToORBuczz",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "From",
+              "description": "Extract the sender’s email address or name",
+              "required": true
+            },
+            {
+              "name": "Email Subject",
+              "description": "Extract the subject line of the email",
+              "required": true
+            },
+            {
+              "name": "Email Content",
+              "description": "Extract the main body content of the email",
+              "required": true
+            },
+            {
+              "name": "Email Status",
+              "description": "Extract the email classification value",
+              "required": true
+            },
+            {
+              "name": "Company_name",
+              "description": "Extract the company name in lowercase",
+              "required": true
+            },
+            {
+              "name": "Job_role",
+              "description": "Extract the job role in lowercase",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        -160
+      ],
+      "id": "572a168b-eb69-4145-adf0-0f488810a064",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "chatgpt-4o-latest"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "7ee9d32d-19f3-4123-aef7-5f28bce9a3c4",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "yfBZ7JJfrMmpcnge",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Information Extractor\n**This node helps extract the the following info in json format:**\n- From\n- Email Subject and Content\n- Company Name\n- Job Role\n- Status of Application",
+        "height": 528,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "0a37b5b4-0136-4d0c-a432-8c1ab29a5cd0",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e5d309dc-cecf-4fcd-87f2-b90600af2d65",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52e5473b2279c5b1a5f9d080c7d0c47d20d3d92f52e5b7c6a17196d1f16e7b2c"
+  },
+  "id": "QpidxyiYLZufbC7f",
+  "tags": []
+}
